@@ -1,5 +1,5 @@
-# Métodos estadísitcos y de IA orientados a datos STEM
+# Métodos estadísticos y de IA orientados a datos STEM
 
 Paquetes de MATLAB necesarios:
-- Statistics and Machine Learning Toolbox
+- _Statistics and Machine Learning Toolbox_
 
