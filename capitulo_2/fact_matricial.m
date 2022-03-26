@@ -1,4 +1,4 @@
-%% Importaci贸n y limpiado de la imagen + detecci贸n de blobs
+%% Importaci髇 y limpiado de la imagen + detecci髇 de blobs
 clc, clear, close all;
 
 % Leemos el mapa de bits que sale del microscopio
@@ -16,12 +16,12 @@ ind = abs(Yt) > thresh*Max;
 Atlow = single(Yt .* ind);
 Ilow = double(ifft2(Atlow));
 
-% Detecci贸n de blobs por NLoG
+% Detecci髇 de blobs por NLoG
 sgm_list = 8;
 [x,y] = blobDetector(Ilow,sgm_list,0.028,1);
 
-%% Extracci贸n de los parches de informaci贸n
-% Generamos la Figura 8 para visualizar c贸mo se va a construir la matriz:
+%% Extracci髇 de los parches de informaci髇
+% Generamos la Figura 8 para visualizar c髆o se va a construir la matriz:
 m = 50; % Distacia respecto al blob a cada lado
 i = 49; % Elegimos una columna que cumpla las condiciones
 
@@ -37,7 +37,7 @@ title("Parche $m\times m$ $|$ $m = $" + num2str(m) + "px",'interpreter','latex')
 legend("Columna at贸mica")
 xlabel("x [px]"), ylabel("y [px]")
 
-% Dibujamos localizaci贸n del parche en la imagen
+% Dibujamos localizaci髇 del parche en la imagen
 x1 = x(i)-m; y1 = y(i)-m;
 x2 = x(i)-m; y2 = y(i)+m;
 x3 = x(i)+m; y3 = y(i)+m;
@@ -50,13 +50,13 @@ plot([x1 x2 x3 x4 x1],[y1 y2 y3 y4 y1], "-r", "LineWidth",2)
 legend("Columna at\'omica", "Parche $m\times m$",'interpreter', 'latex')
 
 % -----------------------------------------------------------------------
-% Una vez mostrado el proceso, generamos el tensor de informaci贸n  para 
+% Una vez mostrado el proceso, generamos el tensor de informaci髇  para 
 % posteriormente aplanarlo y transformarlo en la matriz  que procesaremos 
-% por los distintos m茅todos de factorizaci贸n matricial:
+% por los distintos m閠odos de factorizaci髇 matricial:
 
 m = 50; % Distacia respecto al blob a cada lado
 
-% Contabilizamos cu谩ntos parches vamos a generar para inicializar T y X
+% Contabilizamos cu醤tos parches vamos a generar para inicializar T y X
 patchs = 0;
 for i = 1:length(x)
     if (x(i) > m && y(i) > m) && (x(i) < (size(I,2) - m) && y(i) < (size(I,1) - m))
@@ -87,10 +87,20 @@ X = reshape(T, (2*m+1)^2, patchs)';
 %figure(3), clf;
 %imagesc(reshape(X(:,length(T)),2*m+1,2*m+1))
 
+% Separamos los datos entre train_data y test_data
+n1 = 268;
+n2 = 100;
+
+X_train = X;
+X_train(n1,:) = [];
+X_train(n2,:) = [];
+
+X_test = [X(n1,:) ; X(n2,:)];
+
 %% Descomposici贸n PCA 
 % Hacemos uso del algoritmo implementado en MATLAB
 % (requiere "Statistics and Machine Learning Toolbox")
-[V,U,s2] = pca(X);
+[V,U,s2] = pca(X_train);
 
 % Nos quedamos con los dos primeros coeficientes porque son los que tienen
 % una mayor varianza (s2)
@@ -110,7 +120,7 @@ title("PCA: Primeras dos componentes")
 
 %biplot(V(:,1:2),'scores',score(:,1:2)), hold on;
 
-% Dibujamos c铆rculos para distinguir los distintos grupos
+% Dibujamos c韗culos para distinguir los distintos grupos
 % (requiere Symbolic Math Toolbox)
 plotcircle(0.17,-0.8,0.0,"k");
 text(-0.6,0.00,'\leftarrowSe')
@@ -122,47 +132,47 @@ text(0.1,0,'Mo\rightarrow')
 % primeras componentes principales
 X_ = U(:,1:2)*V(:,1:2)';
 X_ = X_/max(max(abs(X_)));
-I_ = reshape(X_(268,:),2*m+1,2*m+1);
+I_ = reshape(X_(266,:),2*m+1,2*m+1);
 subplot(3,4,2);
 imagesc(I_), colormap default; colorbar
 text(145,0,'Se'), text(145,90,'Mo')
-title("PCA: Reconstrucci贸n")
+title("\textbf{PCA }$| \; X = U \times V$","Interpreter","latex")
 
 % Mostramos las componentes por separado
 X_2 = U(:,1)*V(:,1)';
 X_2 = X_2/max(max(abs(X_2)));
-I_1 = reshape(X_2(268,:),2*m+1,2*m+1);
+I_1 = reshape(X_2(266,:),2*m+1,2*m+1);
 subplot(3,4,6);
 imagesc(I_1), colormap default; colorbar
-title("Primera componente")
+title("p = 1","Interpreter","latex")
 
 X_2 = U(:,2)*V(:,2)';
 X_2 = X_2/max(max(abs(X_2)));
-I_2 = reshape(X_2(268,:),2*m+1,2*m+1);
+I_2 = reshape(X_2(266,:),2*m+1,2*m+1);
 subplot(3,4,10);
 imagesc(I_2), colormap default; colorbar
-title("Segunda componente")
+title("p = 2","Interpreter","latex")
 xlabel("x [px]"), ylabel("y [px]")
 
-% Distinguimos entre las dos especies
-delta = 0.5;
-
-mask = I_ > delta;
-I_Se = I_ .* mask;
-subplot(3,4,8);
-imagesc(I_Se), colormap default; colorbar;
-title("Se filtrado")
-caxis([-0.7 0.5])
-
-mask = I_ < -delta;
-I_Mo = I_ .* mask;
-subplot(3,4,12);
-imagesc(I_Mo), colormap default; colorbar;
-title("Mo filtrado")
-caxis([-0.7 0.5])
+% % Distinguimos entre las dos especies
+% delta = 0.5;
+% 
+% mask = I_ > delta;
+% I_Se = I_ .* mask;
+% subplot(3,4,8);
+% imagesc(I_Se), colormap default; colorbar;
+% title("Se filtrado")
+% caxis([-0.7 0.5])
+% 
+% mask = I_ < -delta;
+% I_Mo = I_ .* mask;
+% subplot(3,4,12);
+% imagesc(I_Mo), colormap default; colorbar;
+% title("Mo filtrado")
+% caxis([-0.7 0.5])
 
 %% Descomposici贸n NMF
-% Realizamos la factorizaci贸n NMF
+% Realizamos la factorizaci髇 NMF
 [Un,Vn] = nnmf(X,2);
 
 % Mostramos las dos componentes
@@ -171,13 +181,14 @@ X_1 = X_1/max(max(abs(X_1)));
 I_1 = reshape(X_1(268,:),2*m+1,2*m+1);
 subplot(3,4,7);
 imagesc(I_1), colorbar
-title("NMF")
+title("\textbf{NMF }$| \; k = 1$","Interpreter","latex")
 
 X_2 = Un(:,2)*Vn(2,:);
 X_2 = X_2/max(max(abs(X_2)));
 I_2 = reshape(X_2(268,:),2*m+1,2*m+1);
 subplot(3,4,11);
 imagesc(I_2), colorbar
+title("$k = 2$","Interpreter","latex")
 
 
 %% Generaci贸n de vectores descriptores PCA
