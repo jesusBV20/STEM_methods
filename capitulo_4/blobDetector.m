@@ -7,7 +7,7 @@ function [x,y] = blobDetector(I, sgm_list, delta, n_suav)
     % Inicializamos la figura con la imagen original
     figure(1), clf, subplot(1,N+2,1);
     imagesc(I)
-    title("ABF inv. FTT STEM")
+    title("ABF inv. FFT STEM")
     xlabel("x [px]"), ylabel("y [px]")
     
     % Generamos grid del filtro
